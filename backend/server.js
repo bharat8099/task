@@ -14,11 +14,12 @@ wss.on('connection', (ws) => {
   ws.send(JSON.stringify({ message: 'Connected to Backend...' }));
 
   ws.on('message', async (message) => {
-    console.log('Received:', message)
     if (message == 'trade') {
       try {
         ws.send(JSON.stringify({ message: 'Get Master Trade... (Pinging Lambda Function)' }));
+
         const tradeDetails = await axios.get(LAMBDA_URL);
+        
         ws.send(JSON.stringify({ message: 'Replicating Master Trade', tradeDetails: tradeDetails.data }));
 
         const loginResponse = await axios.get(`${MT4_API_URL}/Connect`, {
@@ -32,8 +33,6 @@ wss.on('connection', (ws) => {
  
 
         const connectionId = loginResponse.data;
-        console.log(connectionId,'connectionId',tradeDetails)
-
         const orderResponse = await axios.get(`${MT4_API_URL}/OrderSend`, {
           params: {
             id: connectionId,
